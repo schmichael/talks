@@ -1,0 +1,15 @@
+// Balancer is the task balancing interface. Without a master Metafora clusters
+// are cooperatively balanced -- meaning each node needs to know how to balance
+// itself.
+type Balancer interface {
+	Init(BalancerContext)
+
+	// CanClaim should return true if the consumer should accept a task. No new
+	// tasks will be claimed while CanClaim is called.
+	CanClaim(taskID string) bool // HL
+
+	// Balance should return the list of Task IDs that should be released. No new
+	// tasks will be claimed during balancing. The criteria used to determine
+	// which tasks should be released is left up to the implementation.
+	Balance() (release []string) // HL
+}

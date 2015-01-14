@@ -1,0 +1,101 @@
+Metafora Distributed Work System
+With Go and etcd
+13 Jan 2015
+Tags: etcd, metafora, distributed
+
+Michael Schurter
+Data Engineer, Lytics
+schmichael@lytics.io
+https://lytics.github.io/
+@schmichael
+
+* About
+
+- schmichael on [[https://twitter.com/schmichael][Twitter]], [[https://github.com/schmichael][Github]], Freenode
+- Using Go personally since [[https://golang.org/doc/devel/release.html#r60][r60 (2011)]] and professionally at [[http://getlytics.com][Lytics]] since 2013.
+- Python developer before that. Professional Java avoider.
+
+.image 2015-metafora/lytics-wide.jpg _ 930
+
+* Lytics
+
+Lytics builds user profiles for our customers.
+
+- Import from customers
+- Merge (Entity Resolution)
+- Enrich
+- Export to customers
+
+* Distributed work at Lytics
+
+- Imports are continuous/streaming _or_ one time
+- Merging is continuous
+- Enriching is continuous _or_ one time
+- Exporting is continuous _or_ one time
+
+*Lots*of*work*that*may*run*for*minutes,*hours,*days,*or*forever!*
+
+*Work*must*run* _exactly_ *once.*
+
+* Existing Solutions
+
+- [[http://www.goworker.org/][goworker]] - Optimized for low latency high throughput work. Considers 1s a "high latency job" and has no work state.
+- [[https://github.com/boundary/ordasity][Ordasity]] - JVM only, sorry.
+- [[https://github.com/dforsyth/donut][Donut]] - Go version of Ordasity, unfinished.
+- Cluster management like [[https://mesos.apache.org/][Mesos]] or [[http://kubernetes.io/][Kubernetes]] - Very high operational cost. Optimized for 1 process per "work".
+
+.image 2015-metafora/kube-graph.svg 220 _
+
+* Metafora
+
+Start simple. Add only what's needed. Distributed systems are inherently difficult, so don't overcomplicate.
+
+- A *library* for applications to use (not an app or framework)
+- No *master* - Metafora consumers cooperatively steal work
+- Fault Tolerant - No SPOF, work is reassigned if a consumer crashes
+- Partition Tolerant - Worker shuts down if unable to communicate with quorum
+- Simple - Few states, no checkpointing, no work configuration
+- Extensible - well defined interfaces for coordinators and balancers
+- Testable - comes with an embedded coordinator for easy tests
+
+* Components
+
+.image 2015-metafora/metafora-dia.svg 500 _
+
+* Components: etcd
+
+Highly-available, consistent, key/value store.
+
+ZooKeeper replacement. HTTP API. Simple configuration.
+
+Used as a distributed lock for tasks and queue for commands.
+
+.image 2015-metafora/etcd.png
+
+Purely optional though!
+
+* Components: Coordinator
+
+.code 2015-metafora/coordinator.go.snippet
+
+Task loop: `Watch` → `Claim` → `Release/Done` ↺
+
+Implemented in [[https://godoc.org/github.com/lytics/metafora/m_etcd][m_etcd]].
+
+* Components: Balancer
+
+.code 2015-metafora/balancer.go.snippet
+
+Task loop: `C.Watch` → `B.CanClaim` → `C.Claim` → `C.Release/Done` ↺
+
+`Balance()` called perdiocally right now (see [[https://github.com/lytics/metafora/issues/88][lytics/metafora#88]]).
+
+* Components: Handler
+
+.code 2015-metafora/handler.go.snippet
+
+`C.Watch` → `B.CanClaim` → `C.Claim` → `H.Run` ... `H.Stop` → `C.Release/Done` ↺
+
+* Example!
+
+.play 2015-metafora/example.go /START OMIT/,/END OMIT/

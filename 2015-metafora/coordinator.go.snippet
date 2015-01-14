@@ -1,0 +1,14 @@
+// Coordinator is the core interface Metafora uses to discover, claim, and
+// release tasks as well as receive commands.
+type Coordinator interface {
+	Init(CoordinatorContext) error
+
+	// Task handling
+	Watch() (task string, err error) // HL
+	Claim(task string) bool // HL
+	Release(task string) // HL
+	Done(task string) // HL
+
+	Command() (Command, error)
+	Close()
+}
