@@ -1,0 +1,18 @@
+metafora1:~$ http localhost:4211/metafora/workflows
+HTTP/1.1 200 OK
+Content-Length: 1697
+Content-Type: application/json
+Date: Wed, 14 Jan 2015 01:03:23 GMT
+
+{
+    "frozen": false, 
+    "node": "metafora1-0a463b1007f9345c5f7da30eb9c3a4c2", 
+    "started": "2015-01-13T22:58:01.876882182Z", 
+    "tasks": [
+        "0ba806766c7e554b03249d99c4cee6f4", 
+        "0cefcbea6924a4fa37fe42ec7adbd545", 
+        ...
+        "f6a65ce070998008c3a58bdbfa022035", 
+        "ff1d3fee1b0b808113e483744984d159"
+    ]
+}

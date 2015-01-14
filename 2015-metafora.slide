@@ -99,3 +99,41 @@ Task loop: `C.Watch` → `B.CanClaim` → `C.Claim` → `C.Release/Done` ↺
 * Example!
 
 .play 2015-metafora/example.go /START OMIT/,/END OMIT/
+
+* More Goodies: Builtin Balancers
+
+- [[https://godoc.org/github.com/lytics/metafora#DumbBalancer][Dumb Balancer]] - accept everything!
+- [[https://godoc.org/github.com/lytics/metafora#SleepBalancer][Sleepy Balancer]] - Delay claims by number of tasks already claimed
+- [[https://godoc.org/github.com/lytics/metafora#FairBalancer][Fair Balancer]] - nodes release tasks when they have >120% the cluster average number of tasks. Has a [[https://godoc.org/github.com/lytics/metafora/m_etcd#NewFairBalancer][coordinator specific component]].
+
+* Even more: HTTP Introspection Handler
+
+.code 2015-metafora/httputil.go.snippet
+
+Combine with [[http://golang.org/pkg/net/http/pprof/][net/http/pprof]] for easy debugging.
+
+Help wanted: [[https://github.com/lytics/metafora/issues/27][metrics]].
+
+* Does it work?
+
+Lytics is running 4 VMs in production.
+
+Ran parallel with old system until a couple weeks ago and shut the old system down.
+
+.code 2015-metafora/prod-metafora.log
+
+* Next Steps
+
+- *Task*state*machine* (library or builtin?!)
+- *Task*configuration*management* (library or builtin?!)
+- Alternative coordinator implementation (Help wanted!)
+- [[https://github.com/lytics/metafora/tree/master/Documentation][Docs]], logo, examples (see [[https://github.com/lytics/metafora/tree/master/examples][Koalemos]]), etc.
+- Lots left to do: https://github.com/lytics/metafora/issues
+
+* Interesting bits
+
+- [[https://github.com/lytics/metafora/blob/master/metafora.go][metafora.go]] - The main consumer (~500 lines)
+- Using [[https://github.com/lytics/metafora/blob/master/metafora.go#L80-L88][the consumer and anonymous types]] to implement [[https://github.com/lytics/metafora/blob/master/balancer.go#L14-L23][Balancer]] and [[https://github.com/lytics/metafora/blob/master/coordinator.go#L3-L13][Coordinator]] `Contexts`.
+- [[https://github.com/lytics/metafora/blob/master/m_etcd/coordinator.go#L437-L488][etcd watching]] - Sadly trickier than I had hoped!
+- `koalemosd` [[https://github.com/lytics/metafora/blob/master/examples/koalemosd/main.go][main.go]] and [[https://github.com/lytics/metafora/blob/master/examples/koalemosd/handler.go][handler.go]] - A more involved handler implementation.
+- [[https://github.com/lytics/metafora/blob/master/m_etcd/taskmgr.go][taskmgr.go]] - Maintains work claims in etcd

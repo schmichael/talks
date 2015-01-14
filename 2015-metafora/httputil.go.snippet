@@ -1,0 +1,11 @@
+func MakeInfoHandler(c Consumer, node string, started time.Time) http.HandlerFunc {
+	return func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(&InfoResponse{
+			Frozen:  c.Frozen(),
+			Node:    node,
+			Started: started,
+			Tasks:   c.Tasks(),
+		})
+	}
+}
