@@ -117,7 +117,7 @@ Help wanted: [[https://github.com/lytics/metafora/issues/27][metrics]].
 
 * Does it work?
 
-Lytics is running 4 VMs in production.
+Lytics is running a 4 instance cluster in production.
 
 Ran parallel with old system until a couple weeks ago and shut the old system down.
 
